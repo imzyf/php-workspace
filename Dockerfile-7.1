@@ -1,0 +1,86 @@
+#
+#--------------------------------------------------------------------------
+# Image Setup
+#--------------------------------------------------------------------------
+#
+# https://github.com/laradock/workspace/blob/master/Dockerfile-7.1
+
+FROM phusion/baseimage:focal-1.0.0
+
+LABEL maintainer="Yifans_Z <zhaoyifans@gmaill.com>"
+
+# DEBIAN_FRONTEND环境变量，告知操作系统应该从哪儿获得用户输入。
+# 如果设置为"noninteractive"，你就可以直接运行命令，而无需向用户请求输入（所有操作都是非交互式的）。
+# 这在运行apt-get命令的时候格外有用，因为它会不停的提示用户进行到了哪步并且需要不断确认。
+# 非交互模式会选择默认的选项并以最快的速度完成构建。请确保只在Dockerfile中调用的RUN命令中设置了该选项，而不是使用ENV命令进行全局的设置。
+# 因为ENV命令在整个容器运行过程中都会生效，所以当你通过BASH和容器进行交互时，如果进行了全局设置那就会出问题。
+# RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install nginx
+# https://www.cnblogs.com/bollen/p/7137200.html
+ENV DEBIAN_FRONTEND=noninteractive
+RUN locale-gen en_US.UTF-8
+
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LC_CTYPE=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV TERM xterm
+
+
+
+RUN set -eux \
+    # Add the "PHP 7" ppa
+    # Personal Package Archive (PPA)
+    && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:ondrej/php \
+    #
+    #--------------------------------------------------------------------------
+    # Software's Installation
+    #--------------------------------------------------------------------------
+    #
+    && echo 'DPkg::options { "--force-confdef"; };' >> /etc/apt/apt.conf \
+    # Install "PHP Extentions", "libraries", "Software's"
+    && apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --allow-downgrades --allow-remove-essential \
+        --allow-change-held-packages \
+        php7.1-cli \
+        php7.1-common \
+        php7.1-curl \
+        php7.1-intl \
+        php7.1-json \
+        php7.1-xml \
+        php7.1-mbstring \
+        php7.1-mcrypt \
+        php7.1-mysql \
+        php7.1-pgsql \
+        php7.1-sqlite \
+        php7.1-sqlite3 \
+        php7.1-zip \
+        php7.1-bcmath \
+        php7.1-memcached \
+        php7.1-gd \
+        php7.1-dev \
+        pkg-config \
+        libcurl4-openssl-dev \
+        libedit-dev \
+        libssl-dev \
+        libxml2-dev \
+        xz-utils \
+        libsqlite3-dev \
+        rsync \
+        sqlite3 \
+        git \
+        curl \
+        vim \
+        nano \
+        tree \
+        postgresql-client \
+    && apt-get clean \
+    #####################################
+    # Composer:
+    #####################################
+    # Install composer and add its bin to the PATH.
+    && curl -s http://getcomposer.org/installer | php \
+    && echo "export PATH=${PATH}:/var/www/vendor/bin" >> ~/.bashrc \
+    && mv composer.phar /usr/local/bin/composer
+
