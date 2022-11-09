@@ -1,4 +1,4 @@
-# My Workspace Base Image
+# My PHP Workspace Base Image
 
 https://github.com/laradock/workspace
 
