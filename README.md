@@ -17,6 +17,12 @@ docker run --help
 
 docker run -d fd73afb17bcb
 
+### check swoole ssl
+
+```bash
+php -r "new swoole_server('0.0.0.0', 443, SWOOLE_PROCESS, SWOOLE_SOCK_TCP | SWOOLE_SSL);"
+```
+
 ## use
 
 ```bash
