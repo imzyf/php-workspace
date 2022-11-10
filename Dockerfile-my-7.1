@@ -13,6 +13,9 @@ ARG LARADOCK_PHP_VERSION 7.1
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
+# Start as root
+USER root
+
 ###########################################################################
 # Laradock non-root user:
 ###########################################################################
@@ -62,6 +65,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ###########################################################################
 # MongoDB:
 ###########################################################################
+
+USER root
 
 ARG INSTALL_MONGO=true
 
