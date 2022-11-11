@@ -112,12 +112,13 @@ RUN set -eux; \
       if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
         echo '' | pecl -q install swoole-2.0.10; \
       elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") = "0" ]; then \
-        echo '' | pecl -q install swoole-4.3.5; \
+        echo '' | pecl -q install swoole-4.3.6; \
       elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") = "1" ]; then \
-        # https://github.com/swoole/swoole-src/blob/master/package.xml
-        echo '' | pecl -q install --configureoptions 'enable-openssl="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.5.11; \
+        echo '' | pecl -q install -D 'enable-openssl="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.5.11; \
+      elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ]; then \
+        echo '' | pecl -q install -D 'enable-openssl="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.8.12; \
       else \
-        echo '' | pecl -q install --configureoptions 'enable-openssl="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole; \
+        echo '' | pecl -q install -D 'enable-openssl="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole; \
       fi; \
       echo "extension=swoole.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini; \
       ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-swoole.ini; \
