@@ -276,13 +276,12 @@ RUN if [ ${INSTALL_DNSUTILS} = true ]; then \
   ;fi
 
 ###########################################################################
-# PHP8
+# PHP8 - yifans
 ###########################################################################
 
 RUN set -eux \
     # Add the "PHP 8" ppa
-    && apt-get install -y software-properties-common \
-    && add-apt-repository -y ppa:ondrej/php \
+    add-apt-repository -y ppa:ondrej/php \
     && apt-get install -y --allow-downgrades --allow-remove-essential \
         --allow-change-held-packages \
         php7.1-cli
@@ -291,14 +290,14 @@ RUN set -eux \
 RUN update-alternatives --set php /usr/bin/php7.1
 
 ###########################################################################
-# PHPStan Esc by PHP8 composer
+# composer-tools by PHP8 composer - yifans
 ###########################################################################
 
 # Add the composer.json
 COPY ./composer-tools.json /home/laradock/composer-tools/composer.json
 
-# Make sure that ~/.composer belongs to laradock
-RUN chown -R laradock:laradock /home/laradock/.composer
+# Make sure that /home/laradock/composer-tools belongs to laradock
+RUN chown -R laradock:laradock /home/laradock/composer-tools
 
 USER laradock
 
