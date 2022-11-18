@@ -275,6 +275,37 @@ RUN if [ ${INSTALL_DNSUTILS} = true ]; then \
   apt-get update && apt-get install -y dnsutils \
   ;fi
 
+###########################################################################
+# PHP8
+###########################################################################
+
+RUN set -eux \
+    # Add the "PHP 8" ppa
+    && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:ondrej/php \
+    && apt-get install -y --allow-downgrades --allow-remove-essential \
+        --allow-change-held-packages \
+        php7.1-cli
+
+# switch php7.1
+RUN update-alternatives --set php /usr/bin/php7.1
+
+###########################################################################
+# PHPStan Esc by PHP8 composer
+###########################################################################
+
+# Add the composer.json
+COPY ./composer-tools.json /home/laradock/composer-tools/composer.json
+
+# Make sure that ~/.composer belongs to laradock
+RUN chown -R laradock:laradock /home/laradock/.composer
+
+USER laradock
+
+RUN cd /home/laradock/composer-tools && /usr/bin/php8.1 /usr/local/bin/composer install
+
+USER root
+
 #
 #--------------------------------------------------------------------------
 # Final Touch

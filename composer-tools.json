@@ -1,0 +1,14 @@
+{
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "preferred-install": {
+            "*": "dist"
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "phpstan/phpstan": "^1.9",
+        "symplify/easy-coding-standard": "^11.1"
+    }
+} 
