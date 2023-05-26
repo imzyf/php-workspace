@@ -4,7 +4,9 @@
 #--------------------------------------------------------------------------
 #
 
-FROM yifans/php-workspace:main-7.4
+ARG BASE_IMAGE_TAG=laradock/workspace
+ARG BASE_IMAGE_TAG_PREFIX=latest
+FROM ${BASE_IMAGE_TAG}:${BASE_IMAGE_TAG_PREFIX}-7.4
 
 LABEL maintainer="Yifans_Z <168@yifans.com>"
 
