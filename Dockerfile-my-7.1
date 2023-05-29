@@ -64,6 +64,29 @@ ENV TZ ${TZ}
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+###########################################################################
+# User Aliases
+###########################################################################
+
+USER root
+
+COPY ./aliases.sh /root/aliases.sh
+COPY ./aliases.sh /home/laradock/aliases.sh
+
+RUN sed -i 's/\r//' /root/aliases.sh && \
+    sed -i 's/\r//' /home/laradock/aliases.sh && \
+    chown laradock:laradock /home/laradock/aliases.sh && \
+    echo "" >> ~/.bashrc && \
+    echo "# Load Custom Aliases" >> ~/.bashrc && \
+    echo "source ~/aliases.sh" >> ~/.bashrc && \
+	  echo "" >> ~/.bashrc
+
+USER laradock
+
+RUN echo "" >> ~/.bashrc && \
+    echo "# Load Custom Aliases" >> ~/.bashrc && \
+    echo "source ~/aliases.sh" >> ~/.bashrc && \
+	  echo "" >> ~/.bashrc
 
 ###########################################################################
 # Composer:
@@ -146,10 +169,17 @@ COPY ./crontab /etc/cron.d
 RUN chmod -R 644 /etc/cron.d
 
 ###########################################################################
-# MongoDB:
+# Certificate Authorities
 ###########################################################################
 
 USER root
+
+COPY ./ca-certificates/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
+###########################################################################
+# MongoDB:
+###########################################################################
 
 ARG INSTALL_MONGO=true
 
@@ -180,7 +210,8 @@ fi
 ARG INSTALL_PHPREDIS=true
 
 RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
-    apt-get install -yqq php${LARADOCK_PHP_VERSION}-redis \
+    apt-get update \
+    && apt-get install -yqq php${LARADOCK_PHP_VERSION}-redis \
 ;fi
 
 ###########################################################################
@@ -346,6 +377,7 @@ RUN if [ ${INSTALL_PROTOC} = true ]; then \
   chmod -R +r /usr/local/include/google \
 ;fi
 
+
 ###########################################################################
 # Node / NVM:
 ###########################################################################
@@ -454,7 +486,7 @@ COPY ./.npmrc /home/laradock/.npmrc
 
 USER root
 
-ARG INSTALL_PNPM=true
+ARG INSTALL_PNPM=false
 ENV PNPM_HOME="/home/laradock/.local/share/pnpm"
 ENV PATH $PATH:/home/laradock/.local/share/pnpm
 
@@ -497,6 +529,7 @@ RUN if [ ${INSTALL_YARN} = true ]; then \
 
 # Add PATH for YARN
 ENV PATH $PATH:/home/laradock/.yarn/bin
+
 
 ###########################################################################
 # DNS utilities:
@@ -552,8 +585,8 @@ USER root
 
 # Clean up
 RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    rm /var/log/lastlog /var/log/faillog
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+  rm /var/log/lastlog /var/log/faillog
 
 # Set default work directory
 WORKDIR /var/www

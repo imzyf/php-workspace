@@ -169,10 +169,17 @@ COPY ./crontab /etc/cron.d
 RUN chmod -R 644 /etc/cron.d
 
 ###########################################################################
-# MongoDB:
+# Certificate Authorities
 ###########################################################################
 
 USER root
+
+COPY ./ca-certificates/* /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
+###########################################################################
+# MongoDB:
+###########################################################################
 
 ARG INSTALL_MONGO=true
 
@@ -203,7 +210,8 @@ fi
 ARG INSTALL_PHPREDIS=true
 
 RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
-    apt-get install -yqq php${LARADOCK_PHP_VERSION}-redis \
+    apt-get update \
+    && apt-get install -yqq php${LARADOCK_PHP_VERSION}-redis \
 ;fi
 
 ###########################################################################
@@ -478,7 +486,7 @@ COPY ./.npmrc /home/laradock/.npmrc
 
 USER root
 
-ARG INSTALL_PNPM=true
+ARG INSTALL_PNPM=false
 ENV PNPM_HOME="/home/laradock/.local/share/pnpm"
 ENV PATH $PATH:/home/laradock/.local/share/pnpm
 
