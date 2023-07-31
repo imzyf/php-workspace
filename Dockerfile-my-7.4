@@ -358,7 +358,7 @@ COPY ./.npmrc /home/laradock/.npmrc
 
 USER root
 
-ARG INSTALL_PNPM=true
+ARG INSTALL_PNPM=false
 ENV PNPM_HOME="/home/laradock/.local/share/pnpm"
 ENV PATH $PATH:/home/laradock/.local/share/pnpm
 
