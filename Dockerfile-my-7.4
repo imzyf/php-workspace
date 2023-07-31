@@ -4,13 +4,13 @@
 #--------------------------------------------------------------------------
 #
 
-ARG LARADOCK_PHP_VERSION=7.1
+ARG LARADOCK_PHP_VERSION=7.4
 ARG BASE_IMAGE_TAG_PREFIX=latest
 FROM laradock/workspace:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 
 LABEL maintainer="Yifans_Z <168@yifans.com>"
 
-ARG LARADOCK_PHP_VERSION=7.1
+ARG LARADOCK_PHP_VERSION=7.4
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -224,7 +224,7 @@ RUN set -eux; \
     if [ ${INSTALL_SWOOLE} = true ]; then \
       # Install Php Swoole Extension
       # YIFAN
-      echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.5.11; \
+      echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.8.12; \
       echo "extension=swoole.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini; \
       ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-swoole.ini; \
       php -m | grep -q 'swoole'; \

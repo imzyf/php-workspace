@@ -4,9 +4,9 @@
 #--------------------------------------------------------------------------
 #
 
-ARG BASE_IMAGE_TAG=laradock/workspace
+ARG LARADOCK_PHP_VERSION=8.1
 ARG BASE_IMAGE_TAG_PREFIX=latest
-FROM ${BASE_IMAGE_TAG}:${BASE_IMAGE_TAG_PREFIX}-8.1
+FROM laradock/workspace:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 
 LABEL maintainer="Yifans_Z <168@yifans.com>"
 
@@ -223,40 +223,12 @@ ARG INSTALL_SWOOLE=true
 RUN set -eux; \
     if [ ${INSTALL_SWOOLE} = true ]; then \
       # Install Php Swoole Extension
-      if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
-        echo '' | pecl -q install swoole-2.0.10; \
-      elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") = "0" ]; then \
-        echo '' | pecl -q install swoole-4.3.6; \
-      elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") = "1" ]; then \
-        echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.5.11; \
-      elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ]; then \
-        echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.8.12; \
-      else \
-        echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole; \
-      fi; \
+      # YIFAN
+      echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole; \
       echo "extension=swoole.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini; \
       ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-swoole.ini; \
       php -m | grep -q 'swoole'; \
     fi
-
-###########################################################################
-# xlswriter:
-###########################################################################
-
-ARG INSTALL_XLSWRITER=true
-
-RUN set -eux; \
-    if [ ${INSTALL_XLSWRITER} = true ]; then \
-      # Install Php xlswriter Extension
-      if [ $(php -r "echo PHP_MAJOR_VERSION;") != "5" ]; then \
-        echo '' | pecl -q install xlswriter && \
-        echo "extension=xlswriter.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/xlswriter.ini && \
-        ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/xlswriter.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-xlswriter.ini && \
-        php -m | grep -q 'xlswriter'; \
-      else \
-        echo "PHP Extension for xlswriter is not supported for PHP 5.0"; \
-      fi \
-    ;fi
 
 ###########################################################################
 # AST EXTENSION
@@ -277,122 +249,23 @@ RUN if [ ${INSTALL_AST} = true ]; then \
 ;fi
 
 ###########################################################################
-USER root
-
-ARG INSTALL_MYSQL_CLIENT=true
-ARG INSTALL_PING=true
-ARG INSTALL_SSHPASS=false
-ARG INSTALL_DOCKER_CLIENT=false
-
-RUN set -eux; \
-  ###########################################################################
-  # MySQL Client:
-  ###########################################################################
-  if [ ${INSTALL_MYSQL_CLIENT} = true ]; then \
-    apt-get -yqq install mysql-client; \
-  fi; \
-  ###########################################################################
-  # ping:
-  ###########################################################################
-  if [ ${INSTALL_PING} = true ]; then \
-    apt-get -yqq install inetutils-ping; \
-  fi; \
-  ###########################################################################
-  # sshpass:
-  ###########################################################################
-  if [ ${INSTALL_SSHPASS} = true ]; then \
-    apt-get -yqq install sshpass; \
-  fi; \
-  ###########################################################################
-  # Docker Client:
-  ###########################################################################
-  if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz; \
-    tar -xzf /tmp/docker.tar.gz -C /tmp/; \
-    cp /tmp/docker/docker* /usr/local/bin; \
-    chmod +x /usr/local/bin/docker*; \
-  fi
-
-###########################################################################
-
-USER root
-
-ARG INSTALL_YAML=false
-ARG INSTALL_RDKAFKA=true
-ARG INSTALL_FFMPEG=false
-
-RUN set -eux; \
-  ###########################################################################
-  # YAML: extension for PHP-CLI
-  ###########################################################################
-  if [ ${INSTALL_YAML} = true ]; then \
-    apt-get install -yqq libyaml-dev; \
-    if   [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
-        echo '' | pecl install -a yaml-1.3.2; \
-    elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") = "0" ]; then \
-        echo '' | pecl install yaml-2.0.4; \
-    else \
-        echo '' | pecl install yaml; \
-    fi; \
-    echo "extension=yaml.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/yaml.ini; \
-    ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/yaml.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/35-yaml.ini; \
-  fi; \
-  ###########################################################################
-  # RDKAFKA:
-  ###########################################################################
-  if [ ${INSTALL_RDKAFKA} = true ]; then \
-    apt-get install -yqq librdkafka-dev; \
-    pecl install rdkafka; \
-    echo "extension=rdkafka.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/rdkafka.ini; \
-    ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/rdkafka.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-rdkafka.ini; \
-    php -m | grep -q 'rdkafka'; \
-  fi; \
-  ###########################################################################
-  # FFMpeg:
-  ###########################################################################
-  if [ ${INSTALL_FFMPEG} = true ]; then \
-    apt-get -yqq install ffmpeg; \
-  fi
-
-###########################################################################
-# Protoc:
-###########################################################################
-
-ARG INSTALL_PROTOC=false
-ARG PROTOC_VERSION=latest
-
-RUN if [ ${INSTALL_PROTOC} = true ]; then \
-  if [ ${PROTOC_VERSION} = "latest" ]; then \
-    REAL_PROTOC_VERSION=$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | \
-      sed -nr 's/.*"tag_name":\s?"v(.+?)".*/\1/p'); \
-  else \
-    REAL_PROTOC_VERSION=${PROTOC_VERSION}; \
-  fi && \
-  PROTOC_ZIP=protoc-${REAL_PROTOC_VERSION}-linux-x86_64.zip; \
-  curl -L -o /tmp/protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v${REAL_PROTOC_VERSION}/${PROTOC_ZIP} && \
-  unzip -q -o /tmp/protoc.zip -d /usr/local bin/protoc && \
-  unzip -q -o /tmp/protoc.zip -d /usr/local 'include/*' && \
-  rm -f /tmp/protoc.zip && \
-  chmod +x /usr/local/bin/protoc && \
-  chmod -R +r /usr/local/include/google \
-;fi
-
-
-###########################################################################
 # Node / NVM:
 ###########################################################################
 
+# YIFAN
 USER laradock
 
 # Check if NVM needs to be installed
-# ARG NODE_VERSION=node
-ARG NODE_VERSION=16
+# YIFAN 14
+ARG NODE_VERSION=14
 ENV NODE_VERSION ${NODE_VERSION}
+# YIFAN 
 ARG INSTALL_NODE=true
 ARG INSTALL_NPM_GULP=false
 ARG INSTALL_NPM_BOWER=false
-ARG INSTALL_NPM_VUE_CLI=true
+ARG INSTALL_NPM_VUE_CLI=false
 ARG INSTALL_NPM_ANGULAR_CLI=false
+ARG INSTALL_NPM_CHECK_UPDATES_CLI=false
 ARG NPM_REGISTRY
 ENV NPM_REGISTRY ${NPM_REGISTRY}
 ARG NPM_FETCH_RETRIES
@@ -410,11 +283,12 @@ ENV NVM_NODEJS_ORG_MIRROR ${NVM_NODEJS_ORG_MIRROR}
 RUN if [ ${INSTALL_NODE} = true ]; then \
     # Install nvm (A Node Version Manager)
     mkdir -p $NVM_DIR && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash \
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash \
         && . $NVM_DIR/nvm.sh \
         && nvm install ${NODE_VERSION} \
         && nvm use ${NODE_VERSION} \
         && nvm alias ${NODE_VERSION} \
+        && npm cache clear --force \
         && npm config set fetch-retries ${NPM_FETCH_RETRIES} \
         && npm config set fetch-retry-factor ${NPM_FETCH_RETRY_FACTOR} \
         && npm config set fetch-retry-mintimeout ${NPM_FETCH_RETRY_MINTIMEOUT} \
@@ -434,7 +308,9 @@ RUN if [ ${INSTALL_NODE} = true ]; then \
         && if [ ${INSTALL_NPM_ANGULAR_CLI} = true ]; then \
         npm install -g @angular/cli \
         ;fi \
-        && ln -s `npm bin --global` /home/laradock/.node-bin \
+        && if [ ${INSTALL_NPM_CHECK_UPDATES_CLI} = true ]; then \
+        npm install -g npm-check-updates \
+        ;fi \
 ;fi
 
 # Wouldn't execute when added to the RUN statement in the above block
@@ -453,9 +329,6 @@ RUN if [ ${INSTALL_NODE} = true ]; then \
     echo 'export NVM_DIR="/home/laradock/.nvm"' >> ~/.bashrc && \
     echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc \
 ;fi
-
-# Add PATH for node
-ENV PATH $PATH:/home/laradock/.node-bin
 
 # Make it so the node modules can be executed with 'docker-compose exec'
 # We'll create symbolic links into '/usr/local/bin'.
@@ -479,14 +352,13 @@ RUN if [ ${NPM_REGISTRY} ]; then \
 COPY ./.npmrc /root/.npmrc
 COPY ./.npmrc /home/laradock/.npmrc
 
-
 ###########################################################################
 # PNPM:
 ###########################################################################
 
 USER root
 
-ARG INSTALL_PNPM=false
+ARG INSTALL_PNPM=true
 ENV PNPM_HOME="/home/laradock/.local/share/pnpm"
 ENV PATH $PATH:/home/laradock/.local/share/pnpm
 
@@ -530,6 +402,152 @@ RUN if [ ${INSTALL_YARN} = true ]; then \
 # Add PATH for YARN
 ENV PATH $PATH:/home/laradock/.yarn/bin
 
+###########################################################################
+# PYTHON3:
+###########################################################################
+
+ARG INSTALL_PYTHON3=true
+
+RUN if [ ${INSTALL_PYTHON3} = true ]; then \
+  apt-get -y install python3 python3-dev build-essential  \
+  && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  \
+  && python3 get-pip.py  \
+  && rm get-pip.py  \
+  && python3 -m pip install --upgrade --force-reinstall pip  \
+  && python3 -m pip install --upgrade virtualenv \
+;fi
+
+###########################################################################
+# SUPERVISOR:
+###########################################################################
+ARG INSTALL_SUPERVISOR=false
+
+RUN if [ ${INSTALL_SUPERVISOR} = true ]; then \
+    if [ ${INSTALL_PYTHON} = true ]; then \
+    python -m pip install --upgrade supervisor && \
+    echo_supervisord_conf > /etc/supervisord.conf && \
+    sed -i 's/\;\[include\]/\[include\]/g' /etc/supervisord.conf && \
+    sed -i 's/\;files\s.*/files = supervisord.d\/*.conf/g' /etc/supervisord.conf \
+  ;fi \
+;fi
+
+###########################################################################
+USER root
+
+ARG INSTALL_MYSQL_CLIENT=false
+# YIFAN
+ARG INSTALL_PING=true
+ARG INSTALL_SSHPASS=false
+ARG INSTALL_DOCKER_CLIENT=false
+
+RUN set -eux; \
+  ###########################################################################
+  # MySQL Client:
+  ###########################################################################
+  if [ ${INSTALL_MYSQL_CLIENT} = true ]; then \
+    apt-get -yqq install mysql-client; \
+  fi; \
+  ###########################################################################
+  # ping:
+  ###########################################################################
+  if [ ${INSTALL_PING} = true ]; then \
+    apt-get -yqq install inetutils-ping; \
+  fi; \
+  ###########################################################################
+  # sshpass:
+  ###########################################################################
+  if [ ${INSTALL_SSHPASS} = true ]; then \
+    apt-get -yqq install sshpass; \
+  fi; \
+  ###########################################################################
+  # Docker Client:
+  ###########################################################################
+  if [ ${INSTALL_DOCKER_CLIENT} = true ]; then \
+    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-20.10.3.tgz -o /tmp/docker.tar.gz; \
+    tar -xzf /tmp/docker.tar.gz -C /tmp/; \
+    cp /tmp/docker/docker* /usr/local/bin; \
+    chmod +x /usr/local/bin/docker*; \
+  fi
+
+###########################################################################
+USER root
+
+ARG INSTALL_YAML=true
+ARG INSTALL_RDKAFKA=true
+ARG INSTALL_FFMPEG=false
+
+RUN set -eux; \
+  ###########################################################################
+  # YAML: extension for PHP-CLI
+  ###########################################################################
+  if [ ${INSTALL_YAML} = true ]; then \
+    apt-get install -yqq libyaml-dev; \
+    if   [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
+        echo '' | pecl install -a yaml-1.3.2; \
+    elif [ $(php -r "echo PHP_MAJOR_VERSION;") = "7" ] && [ $(php -r "echo PHP_MINOR_VERSION;") = "0" ]; then \
+        echo '' | pecl install yaml-2.0.4; \
+    else \
+        echo '' | pecl install yaml; \
+    fi; \
+    echo "extension=yaml.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/yaml.ini; \
+    ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/yaml.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/35-yaml.ini; \
+  fi; \
+  ###########################################################################
+  # RDKAFKA:
+  ###########################################################################
+  if [ ${INSTALL_RDKAFKA} = true ]; then \
+    apt-get install -yqq librdkafka-dev; \
+    pecl install rdkafka; \
+    echo "extension=rdkafka.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/rdkafka.ini; \
+    ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/rdkafka.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-rdkafka.ini; \
+    php -m | grep -q 'rdkafka'; \
+  fi; \
+  ###########################################################################
+  # FFMpeg:
+  ###########################################################################
+  if [ ${INSTALL_FFMPEG} = true ]; then \
+    apt-get -yqq install ffmpeg; \
+  fi
+
+###########################################################################
+# Bash Git Prompt
+###########################################################################
+
+ARG INSTALL_GIT_PROMPT=false
+
+COPY git-prompt.sh /tmp/git-prompt
+
+RUN if [ ${INSTALL_GIT_PROMPT} = true ]; then \
+    git clone https://github.com/magicmonty/bash-git-prompt.git /root/.bash-git-prompt --depth=1 && \
+    cat /tmp/git-prompt >> /root/.bashrc && \
+    rm /tmp/git-prompt \
+;fi
+
+###########################################################################
+# Check PHP version:
+###########################################################################
+
+RUN set -xe; php -v | head -n 1 | grep -q "PHP ${LARADOCK_PHP_VERSION}."
+
+###########################################################################
+# PHP DECIMAL:
+###########################################################################
+
+USER root
+
+ARG INSTALL_PHPDECIMAL=true
+
+RUN if [ ${INSTALL_PHPDECIMAL} = true ]; then \
+    if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
+      echo 'decimal not support PHP 5.6'; \
+    else \
+      apt-get install -yqq libmpdec-dev \
+      && pecl install decimal \
+      && echo "extension=decimal.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/decimal.ini \
+      && ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/decimal.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/30-decimal.ini \
+      && php -m | grep -q 'decimal' \
+    ;fi \
+;fi
 
 ###########################################################################
 # DNS utilities:
@@ -540,8 +558,8 @@ USER root
 ARG INSTALL_DNSUTILS=true
 
 RUN if [ ${INSTALL_DNSUTILS} = true ]; then \
-  apt-get update && apt-get install -y dnsutils \
-  ;fi
+    apt-get update && apt-get install -y dnsutils \
+;fi
 
 #
 #--------------------------------------------------------------------------
@@ -553,8 +571,8 @@ USER root
 
 # Clean up
 RUN apt-get clean && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-  rm /var/log/lastlog /var/log/faillog
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm -f /var/log/lastlog /var/log/faillog
 
 # Set default work directory
 WORKDIR /var/www
