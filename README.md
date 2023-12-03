@@ -8,7 +8,6 @@
 - <https://github.com/laradock/workspace>
 - <https://hub.docker.com/r/laradock/workspace>
 - <https://raw.githubusercontent.com/laradock/laradock/master/workspace/Dockerfile>
-- <https://raw.githubusercontent.com/laradock/workspace/master/Dockerfile-7.1>
 - <https://raw.githubusercontent.com/laradock/workspace/master/Dockerfile-7.4>
 - <https://raw.githubusercontent.com/laradock/workspace/master/Dockerfile-8.1>
 
@@ -22,10 +21,4 @@
 ```bash
 docker run -v $PWD:/var/www --rm laradock-workspace:latest php -m
 docker run -v $PWD:/var/www --rm yifans/php-workspace:main-my-7.1 php -m
-```
-
-```
-docker buildx build -f=Dockerfile-8.1 -t yifans/php-workspace:arm-8.1 . --push
-
-docker buildx build -f=Dockerfile-my-8.1 -t yifans/php-workspace:arm-my-8.1 . --push
 ```

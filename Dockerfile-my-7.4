@@ -224,7 +224,7 @@ RUN set -eux; \
     if [ ${INSTALL_SWOOLE} = true ]; then \
       # Install Php Swoole Extension
       # YIFAN
-      echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-mysqlnd="yes" enable-swoole-curl="yes"' swoole-4.8.12; \
+      echo '' | pecl -q install -D 'enable-openssl="yes" enable-http2="yes" enable-swoole-curl="yes"' swoole-4.8.12; \
       echo "extension=swoole.so" >> /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini; \
       ln -s /etc/php/${LARADOCK_PHP_VERSION}/mods-available/swoole.ini /etc/php/${LARADOCK_PHP_VERSION}/cli/conf.d/20-swoole.ini; \
       php -m | grep -q 'swoole'; \
